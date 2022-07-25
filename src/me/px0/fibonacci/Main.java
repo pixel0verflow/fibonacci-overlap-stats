@@ -7,27 +7,9 @@ class Main {
     public static final String OVR = "overlap";
     public static final String STS = "stats";
 
-    private static class Range {
-        private final int start;
-        private final int end;
-
-        public Range(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
-
-        public boolean overlaps(Range other) {
-            return start <= other.start && end >= other.start || start <= other.end && end >= other.end || start >= other.start && end >= other.end || start <= other.start && end <= other.end;
-        }
-    }
-
-    public static String getInput() {
-        return "";
-    }
-
     public static void main(String args[]) {
         // Output the solution to the console
-        System.out.println(codeHere(getInput()));
+        System.out.println(codeHere(InputSupplier.getInput()));
     }
     public static String codeHere(String inputData) {
         Map<String, Integer> counts = new HashMap<>();
@@ -52,12 +34,7 @@ class Main {
     }
 
     public static String fibonacci(String inputString) {
-        int number = 0;
-        try {
-            number = Integer.parseInt(inputString);
-        } catch (NumberFormatException e) {
-            return "error\n";
-        }
+        int number = sanitizeFibonacci(inputString);
         if (number <= 0)
             return "error\n";
 
@@ -76,22 +53,23 @@ class Main {
         return output.substring(0, output.length()-1) + "\n";
     }
 
-    public static String overlap(String inputString) {
-        String[] inputArray = inputString.split(" ");
-        List<Range> ranges = new ArrayList<>();
-
-        for (int i = 0; i < inputArray.length; i++) {
-            String[] range = inputArray[i].split(",");
-            try {
-                ranges.add(new Range(Integer.parseInt(range[0]), Integer.parseInt(range[1])));
-            } catch (NumberFormatException e) {
-                return "error\n";
-            }
+    private static int sanitizeFibonacci(String inputString) {
+        int number = -1;
+        try {
+            number = Integer.parseInt(inputString);
+        } catch (NumberFormatException e) {
+            // do nothing
         }
+        return number;
+    }
+
+    public static String overlap(String inputString) {
+        int length = inputString.split(" ").length;
+        List<Range> ranges = sanitizeOverlap(inputString);
         String output = "false\n";
 
         for (int i = 0; i < ranges.size(); i++) {
-            for (int j = i+1; j < inputArray.length; j++) {
+            for (int j = i+1; j < length; j++) {
                 if (ranges.get(i).overlaps(ranges.get(j))) {
                     output = "true\n";
                     break;
@@ -101,6 +79,20 @@ class Main {
                 break;
         }
         return output;
+    }
+
+    private static List<Range> sanitizeOverlap(String inputString) {
+        String[] inputArray = inputString.split(" ");
+        List<Range> ranges = new ArrayList<>();
+        for (String s : inputArray) {
+            String[] range = s.split(",");
+            try {
+                ranges.add(new Range(Integer.parseInt(range[0]), Integer.parseInt(range[1])));
+            } catch (NumberFormatException e) {
+                return List.of();
+            }
+        }
+        return ranges;
     }
 
     public static String stats(Map<String, Integer> counts) {
